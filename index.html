@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pluribus Particle Text</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      #ui {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      input {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 30px;
+        outline: none;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 1.2rem;
+        backdrop-filter: blur(5px);
+        transition: border-color 0.3s;
+        width: 300px;
+      }
+
+      input:focus {
+        border-color: #ffffff;
+        background: rgba(0, 0, 0, 0.8);
+      }
+
+      .label {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui">
+      <div class="label">ENTER TEXT</div>
+      <input type="text" id="textInput" value="PLURIBUS" maxlength="12" />
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
