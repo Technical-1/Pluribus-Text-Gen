@@ -34,10 +34,19 @@ function createTextTexture(text) {
   ctx.textBaseline = 'middle'
   ctx.fillText(text.toUpperCase(), width / 2, height / 2)
 
+  const textMetrics = ctx.measureText(text.toUpperCase())
+  const firstMetrics = text.length > 0 ? ctx.measureText(text[0].toUpperCase()) : { width: 0 }
+  const textWidth = textMetrics.width || 1
+  const firstWidth = firstMetrics.width || textWidth
+  const startX = (width - textWidth) / 2
+  const firstCenterPx = startX + firstWidth * 0.5
+  const firstCenterUv = firstCenterPx / width
+  const firstCenterWorldX = (firstCenterUv - 0.5) * 260
+
   const texture = new THREE.CanvasTexture(canvas)
   texture.minFilter = THREE.LinearFilter
   texture.magFilter = THREE.LinearFilter
-  return texture
+  return { texture, firstCenterWorldX }
 }
 
 // --- 3. CREATE PARTICLE SYSTEM ---
@@ -67,13 +76,17 @@ geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
 const material = new THREE.ShaderMaterial({
   uniforms: {
     uTime: { value: 0 },
-    uTexture: { value: createTextTexture('PLURIBUS') },
+    uTexture: { value: null },
+    uWaveOrigin: { value: new THREE.Vector2(0, 0) },
     uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
   },
   vertexShader: `
     uniform float uTime;
+    uniform vec2 uWaveOrigin;
+    uniform sampler2D uTexture;
     varying vec2 vUv;
     varying vec3 vPos;
+    varying float vHandoff;
 
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -106,6 +119,7 @@ const material = new THREE.ShaderMaterial({
     void main() {
       vUv = uv;
       vPos = position;
+      vHandoff = 0.0;
 
       vec3 pos = position;
 
@@ -120,6 +134,24 @@ const material = new THREE.ShaderMaterial({
       vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
       gl_Position = projectionMatrix * mvPosition;
 
+      // Wave-propelled handoff: move a subset of particles rightward as waves pass
+      float distFromOrigin = length((pos.xy - uWaveOrigin) * 0.55);
+      float wavePhase = distFromOrigin * 0.42 - uTime * 2.6;
+      float waveInfluence = smoothstep(0.6, 0.96, sin(wavePhase));
+      // Stronger handoff, primarily on text region in front of the wave
+      float textBand = smoothstep(-30.0, 200.0, pos.x - uWaveOrigin.x);
+      float handoffMask = step(snoise(vec2(pos.xy * 0.07 + uTime * 0.12)), 0.6) * waveInfluence * textBand * 0.9;
+      vec2 handoffDir = normalize(vec2(1.0, 0.08 * snoise(vec2(pos.y * 0.05, uTime * 0.25))));
+      pos.xy += handoffDir * 26.0 * handoffMask;
+      vHandoff = handoffMask;
+
+      // Fingerprint curvature: only bend letter pixels
+      float textMask = texture2D(uTexture, uv).r;
+      float curve = sin(pos.y * 0.08 + pos.x * 0.01) * 6.5;
+      float curveY = cos(pos.x * 0.05 + pos.y * 0.02) * 2.0;
+      pos.x += curve * textMask;
+      pos.y += curveY * textMask;
+
       float sizeJitter = 0.8 + 0.4 * snoise(vec2(pos.x * 0.08, pos.y * 0.08));
       gl_PointSize = 2.8 * sizeJitter * (150.0 / -mvPosition.z);
     }
@@ -127,14 +159,17 @@ const material = new THREE.ShaderMaterial({
   fragmentShader: `
     uniform sampler2D uTexture;
     uniform float uTime;
+    uniform vec2 uWaveOrigin;
     varying vec2 vUv;
     varying vec3 vPos;
+    varying float vHandoff;
 
     void main() {
       vec4 textState = texture2D(uTexture, vUv);
       float isText = textState.r;
+      float carry = vHandoff;
 
-      vec2 waveOrigin = vec2(-130.0, 0.0); // anchor at the first letter for waves
+      vec2 waveOrigin = uWaveOrigin; // anchor at the first letter for waves
       float distFromOrigin = length((vPos.xy - waveOrigin) * 0.55);
       float reveal = 1.0;
 
@@ -142,7 +177,7 @@ const material = new THREE.ShaderMaterial({
 
       float dist = length(vUv - 0.5);
 
-      float wavePhase = distFromOrigin * 0.54 - uTime * 2.6 + (vPos.x * 0.05);
+      float wavePhase = distFromOrigin * 0.54 - uTime * 2.6 + (vPos.x * 0.05) + sin(vPos.y * 0.25) * 0.25;
       float ridgeA = smoothstep(0.36, 0.48, sin(wavePhase));
       float ridgeB = smoothstep(0.36, 0.48, sin(wavePhase + 0.65));
       float ridges = max(ridgeA, ridgeB);
@@ -157,14 +192,16 @@ const material = new THREE.ShaderMaterial({
       if (isText > 0.02) {
         float textWeight = smoothstep(0.35, 0.85, isText);
         color = vec3(1.0);
-        float dither = mix(0.6, 0.92, hash);
-        float baseAlpha = 0.2 * textWeight;
-        alpha = (baseAlpha + ridgeStrength * textWeight) * dither;
+        float dither = mix(0.85, 1.0, hash);
+        float baseAlpha = 0.75 * textWeight;
+        float ridgeAlpha = 0.35 * ridgeStrength * textWeight;
+        alpha = (baseAlpha + ridgeAlpha) * dither;
         // Keep the first letter filled
         if (vPos.x < -40.0) {
-          alpha = max(alpha, 0.9 * textWeight);
+          alpha = max(alpha, 0.95 * textWeight);
         }
-        alpha *= reveal * pulse * travelMix;
+        alpha = max(alpha, 0.7 * textWeight); // prevent shadowing when waves pass
+        alpha += 0.25 * carry; // boost transferred particles
       } else {
         float ring = sin(distFromOrigin * 0.42 - uTime * 2.6);
         float ringMask = smoothstep(0.78, 0.97, ring);
@@ -173,6 +210,7 @@ const material = new THREE.ShaderMaterial({
         if (ringMask > 0.003 || gapDust > 0.015 || cloud > 0.0) {
           color = vec3(1.0);
           alpha = 0.16 * ringMask + 0.12 * gapDust + 0.12 * cloud;
+          alpha += 0.15 * carry;
         } else {
           discard;
         }
@@ -190,6 +228,11 @@ const material = new THREE.ShaderMaterial({
 
 const particles = new THREE.Points(geometry, material)
 scene.add(particles)
+
+// Initialize texture and wave origin based on current input text
+const initial = createTextTexture('PLURIBUS')
+material.uniforms.uTexture.value = initial.texture
+material.uniforms.uWaveOrigin.value.set(initial.firstCenterWorldX, 0)
 
 // --- 5. ANIMATION LOOP ---
 const clock = new THREE.Clock()
@@ -216,6 +259,8 @@ const input = document.getElementById('textInput')
 input.addEventListener('input', (e) => {
   const newText = e.target.value || ' '
   const oldTex = material.uniforms.uTexture.value
-  material.uniforms.uTexture.value = createTextTexture(newText)
+  const next = createTextTexture(newText)
+  material.uniforms.uTexture.value = next.texture
+  material.uniforms.uWaveOrigin.value.set(next.firstCenterWorldX, 0)
   if (oldTex) oldTex.dispose()
 })
