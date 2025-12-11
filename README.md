@@ -1,5 +1,7 @@
 # Pluribus Particle Text
 
+**[Live Demo](https://pluribus-text-gen.vercel.app)**
+
 I loved the TV show and wanted to try and build something to re-create the intro. While it isnt perfect by any means it was the best I could do for a small random day project. It was built with Three.js, the text is rendered as thousands of animated particles with wave ripples and organic movement.
 
 ![Pluribus Particle Text Demo](Pluribus%20Opening%20Titles%20%E2%A7%B8%20Main%20Titles.gif)
