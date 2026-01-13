@@ -6,10 +6,7 @@ A recreation of the Pluribus (Apple TV+) opening title sequence using HTML5 Canv
 
 ## Inspiration
 
-This project was heavily inspired by [lazygunner/pluribus_title](https://github.com/lazygunner/pluribus_title) — their implementation is much better and captures the effect more accurately. I highly recommend checking out their work!
-
-<br>My Version<br>
-![ezgif-844af7ee88aba919](https://github.com/user-attachments/assets/c2e34b39-3cc5-4f9c-9938-6d37a5069be1)
+This project was completely redone after I found [lazygunner/pluribus_title](https://github.com/lazygunner/pluribus_title) — their implementation is much better and captures the effect more accurately. I highly recommend checking out their work! 
 
 Official Version<br>
 ![Pluribus Particle Text Demo](Pluribus%20Opening%20Titles%20%E2%A7%B8%20Main%20Titles.gif)
