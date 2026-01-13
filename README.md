@@ -2,7 +2,7 @@
 
 **[Live Demo](https://pluribus-text-gen.vercel.app)**
 
-I loved the TV show and wanted to try and build something to re-create the intro. While it isn't perfect by any means, it was a fun project to work on.
+A recreation of the Pluribus (Apple TV+) opening title sequence using HTML5 Canvas. Text is rendered as particles in a fingerprint-like pattern with animated wave effects.
 
 ## Inspiration
 
@@ -16,8 +16,8 @@ Official Version<br>
 
 ## Features
 
-- **Fingerprint-style text** — particles arranged in concentric elliptical patterns
-- **Wave aggregation** — particles are pulled toward wave crests, not pushed away
+- **Fingerprint-style text** — particles arranged in concentric elliptical patterns centered on the first letter
+- **Wave aggregation** — particles are pulled toward wave crests, creating compression bands
 - **Elliptical exclusion zones** — background particles avoid letter areas for clean text edges
 - **Interactive input** — type any text to see it rendered in the Pluribus style
 - **Responsive** — adapts to any screen size
@@ -31,40 +31,32 @@ Official Version<br>
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/Technical-1/Pluribus-Text-Gen.git
-cd pluribus-text-gen
-
-# Install dependencies
+cd Pluribus-Text-Gen
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-Open your browser to the URL shown in the terminal (usually `http://localhost:5173`).
-
-## Usage
-
-Simply type in the text input at the bottom of the screen. The particle effect will update in real-time to display your text.
+Open your browser to `http://localhost:5173`.
 
 ## How It Works
 
-1. **Text Scanning** — Text is rendered to a canvas and scanned pixel-by-pixel
-2. **Fingerprint Pattern** — Particles only appear where `distance % spacing < thickness`, creating curved lines
+1. **Text Scanning** — Text is rendered to a hidden canvas and scanned pixel-by-pixel
+2. **Fingerprint Pattern** — Particles only appear where `distance % spacing < thickness`, creating curved concentric lines
 3. **Exclusion Zones** — Elliptical zones around each letter keep background particles out
-4. **Wave Physics** — Circular waves emit from the first letter, pulling particles toward the crest
-5. **High Friction** — Background particles (friction 0.90) snap back after waves pass
+4. **Wave Physics** — Circular waves emit from the first letter, pulling nearby particles toward the wave crest
+5. **High Friction** — Background particles snap back to their original positions after waves pass
 
 ## Tech Stack
 
-- HTML5 Canvas — 2D rendering
-- [Vite](https://vitejs.dev/) — Fast build tool and dev server
-- Vanilla JavaScript — No frameworks, just particles
+- **HTML5 Canvas** — 2D particle rendering
+- **Vanilla JavaScript** — No frameworks
+- **[Vite](https://vitejs.dev/)** — Build tool and dev server
+- **[Montserrat](https://fonts.google.com/specimen/Montserrat)** — Google Font (Black 900)
 
 ## Credits
 
-- Inspired by [lazygunner/pluribus_title](https://github.com/lazygunner/pluribus_title) — the original and better implementation
+- Inspired by [lazygunner/pluribus_title](https://github.com/lazygunner/pluribus_title)
 - Based on the [Pluribus](https://tv.apple.com/us/show/pluribus/umc.cmc.37axgovs2yozlyh3c2cmwzlza) opening title sequence (Apple TV+)
 
 ## Scripts
