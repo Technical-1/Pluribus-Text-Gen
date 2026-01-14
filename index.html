@@ -16,7 +16,7 @@
     <!-- Meta Tags -->
     <meta name="description" content="Interactive particle text effect inspired by the Pluribus TV show intro. Built with Three.js and custom GLSL shaders." />
     <meta name="keywords" content="Pluribus, particle text, Three.js, WebGL, shader, animation" />
-    <meta name="author" content="Technical-1" />
+    <meta name="author" content="Jacob Kanfer" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -83,6 +83,31 @@
         font-size: 0.7rem;
         letter-spacing: 2px;
       }
+      .attribution {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+      }
+      .attribution:hover {
+        opacity: 1;
+      }
+      .attribution img {
+        width: 28px;
+        height: 28px;
+      }
+      .attribution span {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.75rem;
+        font-style: italic;
+        letter-spacing: 1px;
+      }
     </style>
   </head>
   <body>
@@ -90,6 +115,10 @@
       <div class="label">ENTER TEXT</div>
       <input type="text" id="textInput" value="PLUR1BUS" maxlength="12" />
     </div>
+    <a href="https://jacobkanfer.com" target="_blank" rel="noopener noreferrer" class="attribution">
+      <img src="/jk-logo.svg" alt="JK Logo" />
+      <span>Built by Jacob Kanfer</span>
+    </a>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
