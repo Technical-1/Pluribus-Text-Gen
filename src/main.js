@@ -9,9 +9,13 @@ canvas.id = 'canvas1';
 document.body.appendChild(canvas);
 const ctx = canvas.getContext('2d');
 
+// Store full viewport dimensions (not affected by mobile keyboard)
+let fullWidth = window.innerWidth;
+let fullHeight = window.innerHeight;
+
 function setCanvasSize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = fullWidth;
+  canvas.height = fullHeight;
 }
 setCanvasSize();
 
@@ -336,10 +340,33 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// Handle resize
+// Handle resize - only update full dimensions when input isn't focused (keyboard not up)
 window.addEventListener('resize', () => {
+  const input = document.getElementById('textInput');
+  const inputFocused = input && document.activeElement === input;
+
+  // Only update stored dimensions if keyboard isn't affecting viewport
+  if (!inputFocused) {
+    fullWidth = window.innerWidth;
+    fullHeight = window.innerHeight;
+  }
   init();
 });
+
+// Use visualViewport API for better mobile keyboard handling
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const input = document.getElementById('textInput');
+    const inputFocused = input && document.activeElement === input;
+
+    // Only update if keyboard isn't affecting viewport
+    if (!inputFocused) {
+      fullWidth = window.visualViewport.width;
+      fullHeight = window.visualViewport.height;
+      init();
+    }
+  });
+}
 
 // Wait for font to load then initialize
 document.fonts.ready.then(() => {
@@ -366,6 +393,16 @@ if (input) {
       currentText = newText;
       init();
     }
+  });
+
+  // Reinit with full dimensions when keyboard closes (mobile fix)
+  input.addEventListener('blur', () => {
+    // Small delay to let viewport restore after keyboard closes
+    setTimeout(() => {
+      fullWidth = window.innerWidth;
+      fullHeight = window.innerHeight;
+      init();
+    }, 100);
   });
 }
 
