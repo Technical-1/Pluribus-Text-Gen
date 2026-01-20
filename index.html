@@ -84,16 +84,14 @@
         letter-spacing: 2px;
       }
       .attribution {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        z-index: 10;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 10px;
         text-decoration: none;
         opacity: 0.6;
         transition: opacity 0.3s;
+        margin-top: 15px;
       }
       .attribution:hover {
         opacity: 1;
@@ -108,17 +106,37 @@
         font-style: italic;
         letter-spacing: 1px;
       }
+      #screenshotBtn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 0.6;
+        backdrop-filter: blur(5px);
+      }
+      #screenshotBtn:hover {
+        opacity: 1;
+        border-color: #ffffff;
+      }
     </style>
   </head>
   <body>
+    <button id="screenshotBtn" title="Download OG image">📷</button>
     <div id="ui">
       <div class="label">ENTER TEXT</div>
       <input type="text" id="textInput" value="PLUR1BUS" maxlength="12" />
+      <a href="https://jacobkanfer.com" target="_blank" rel="noopener noreferrer" class="attribution">
+        <img src="/jk-logo.svg" alt="JK Logo" />
+        <span>Built by Jacob Kanfer</span>
+      </a>
     </div>
-    <a href="https://jacobkanfer.com" target="_blank" rel="noopener noreferrer" class="attribution">
-      <img src="/jk-logo.svg" alt="JK Logo" />
-      <span>Built by Jacob Kanfer</span>
-    </a>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

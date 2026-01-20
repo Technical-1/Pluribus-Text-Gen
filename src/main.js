@@ -368,3 +368,22 @@ if (input) {
     }
   });
 }
+
+// Screenshot button for OG image
+document.getElementById('screenshotBtn')?.addEventListener('click', () => {
+  const w = 1200, h = 630;
+  const off = document.createElement('canvas');
+  off.width = w;
+  off.height = h;
+  const c = off.getContext('2d');
+  c.fillStyle = '#000';
+  c.fillRect(0, 0, w, h);
+  const scale = Math.min(w / canvas.width, h / canvas.height);
+  const dw = canvas.width * scale;
+  const dh = canvas.height * scale;
+  c.drawImage(canvas, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  const a = document.createElement('a');
+  a.download = 'og-image.png';
+  a.href = off.toDataURL('image/png');
+  a.click();
+});
