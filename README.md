@@ -17,7 +17,9 @@ Official Version<br>
 - **Wave aggregation** — particles are pulled toward wave crests, creating compression bands
 - **Elliptical exclusion zones** — background particles avoid letter areas for clean text edges
 - **Interactive input** — type any text to see it rendered in the Pluribus style
-- **Responsive** — adapts to any screen size
+- **Screenshot export** — capture the canvas as a 1200x630 OG image for social sharing
+- **PWA support** — installable as a standalone app on mobile and desktop
+- **Responsive** — adapts to any screen size with mobile keyboard-aware viewport handling
 
 ## Getting Started
 
@@ -56,6 +58,26 @@ Open your browser to `http://localhost:5173`.
 - Inspired by [lazygunner/pluribus_title](https://github.com/lazygunner/pluribus_title)
 - Based on the [Pluribus](https://tv.apple.com/us/show/pluribus/umc.cmc.37axgovs2yozlyh3c2cmwzlza) opening title sequence (Apple TV+)
 
+## Project Structure
+
+```
+Pluribus-Text-Gen/
+├── public/                # Static assets
+│   ├── favicon.svg        # SVG favicon
+│   ├── icon-180.png       # Apple touch icon
+│   ├── icon-192.png       # PWA icon (192x192)
+│   ├── icon-512.png       # PWA icon (512x512)
+│   ├── jk-logo.svg        # Attribution logo
+│   ├── manifest.webmanifest # PWA manifest
+│   └── og-image.png       # Open Graph preview image
+├── scripts/
+│   └── generate-icons.js  # PWA icon generator (uses sharp)
+├── src/
+│   └── main.js            # Complete particle system (~427 lines)
+├── index.html             # Entry point with UI and meta tags
+└── package.json
+```
+
 ## Scripts
 
 | Command | Description |
@@ -63,3 +85,12 @@ Open your browser to `http://localhost:5173`.
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
+| `npm run generate-icons` | Regenerate PWA icons from SVG source |
+
+## License
+
+MIT
+
+## Author
+
+Jacob Kanfer - [GitHub](https://github.com/Technical-1)
