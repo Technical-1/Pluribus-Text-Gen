@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .og-card {
+      width: 1200px;
+      height: 630px;
+      position: relative;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Full-bleed particle screenshot */
+    .og-card .bg-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+
+    /* Bottom gradient for text readability */
+    .og-card .gradient-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0) 30%,
+        rgba(0, 0, 0, 0.45) 55%,
+        rgba(0, 0, 0, 0.85) 80%,
+        rgba(0, 0, 0, 0.95) 100%
+      );
+    }
+
+    /* Subtle top vignette */
+    .og-card .top-vignette {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0) 25%
+      );
+    }
+
+    /* Content positioned at bottom */
+    .og-card .content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0 60px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .og-card .title {
+      font-weight: 900;
+      font-size: 52px;
+      color: #fff;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .og-card .tagline {
+      font-weight: 400;
+      font-size: 22px;
+      color: rgba(255, 255, 255, 0.7);
+      letter-spacing: 2px;
+    }
+
+    .og-card .url {
+      font-weight: 700;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* Thin accent line above content */
+    .og-card .accent-line {
+      width: 60px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.4);
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="og-card">
+    <img class="bg-image" src="../og-image.png" alt="">
+    <div class="gradient-overlay"></div>
+    <div class="top-vignette"></div>
+    <div class="content">
+      <div class="accent-line"></div>
+      <div class="title">Pluribus Text Gen</div>
+      <div class="tagline">Interactive particle text inspired by the Pluribus title sequence</div>
+    </div>
+  </div>
+</body>
+</html>
