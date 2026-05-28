@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { waveForce, waveVisualParticleCount } from './simulation.js';
+import { textScanBounds } from './simulation.js';
 
 // Mirrors the relevant fields of the config object in main.js.
 const config = {
@@ -91,5 +92,40 @@ describe('waveVisualParticleCount', () => {
         config.maxWaveVisualParticles
       );
     }
+  });
+});
+
+describe('textScanBounds', () => {
+  it('returns a region centered horizontally within the canvas', () => {
+    const b = textScanBounds(1000, 800, 400, 200, 400);
+    expect(b.x).toBeGreaterThanOrEqual(0);
+    expect(b.x + b.w).toBeLessThanOrEqual(1000);
+    // text width 400 centered in 1000 -> left edge near 300, minus a little padding
+    expect(b.x).toBeGreaterThan(250);
+    expect(b.x).toBeLessThan(300);
+  });
+
+  it('brackets centerY vertically', () => {
+    const b = textScanBounds(1000, 800, 400, 200, 400);
+    expect(b.y).toBeLessThan(400);
+    expect(b.y + b.h).toBeGreaterThan(400);
+  });
+
+  it('clamps width to the canvas when text is wider than the canvas', () => {
+    const b = textScanBounds(300, 800, 5000, 200, 400);
+    expect(b.x).toBe(0);
+    expect(b.w).toBeLessThanOrEqual(300);
+  });
+
+  it('clamps the vertical region to the canvas top edge', () => {
+    const b = textScanBounds(1000, 100, 400, 400, 10);
+    expect(b.y).toBe(0);
+    expect(b.y + b.h).toBeLessThanOrEqual(100);
+  });
+
+  it('never returns zero or negative dimensions', () => {
+    const b = textScanBounds(1000, 800, 0, 0, 400);
+    expect(b.w).toBeGreaterThanOrEqual(1);
+    expect(b.h).toBeGreaterThanOrEqual(1);
   });
 });

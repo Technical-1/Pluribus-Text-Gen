@@ -2,7 +2,7 @@
 // Original: https://github.com/lazygunner/pluribus_title
 // Their implementation is much better - check it out!
 
-import { waveForce, waveVisualParticleCount } from './simulation.js';
+import { waveForce, waveVisualParticleCount, textScanBounds } from './simulation.js';
 
 let currentText = "PLUR1BUS";
 
@@ -256,39 +256,44 @@ function init() {
     }
   }
 
-  // Scan full text to create text particles with fingerprint pattern
-  function scanText(text, x, y) {
+  // Scan only the text's bounding box (not the whole canvas) for text pixels.
+  const scanRegion = textScanBounds(canvas.width, canvas.height, totalWidth, fontSize, config.pCenterY);
+
+  function scanText(text, x, y, region) {
     ctx.fillStyle = 'white';
     ctx.fillText(text, x, y);
-    let data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = ctx.getImageData(region.x, region.y, region.w, region.h);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     return data;
   }
 
   // Render full text centered
   ctx.textAlign = 'center';
-  let textData = scanText(fullText, canvas.width / 2, config.pCenterY);
+  let textData = scanText(fullText, canvas.width / 2, config.pCenterY, scanRegion);
 
-  function createTextParticles(imageData) {
+  function createTextParticles(imageData, originX, originY) {
     const step = config.sampleStep;
-    for (let y = 0; y < imageData.height; y += step) {
-      for (let x = 0; x < imageData.width; x += step) {
-        let isTextPixel = imageData.data[(y * 4 * imageData.width) + (x * 4) + 3] > 128;
+    for (let row = 0; row < imageData.height; row += step) {
+      for (let col = 0; col < imageData.width; col += step) {
+        let isTextPixel = imageData.data[(row * imageData.width + col) * 4 + 3] > 128;
         if (isTextPixel) {
-          let dx = x - config.pCenterX;
-          let dy = y - config.pCenterY;
+          // Translate region-local pixel coords back to absolute canvas coords.
+          let px = originX + col;
+          let py = originY + row;
+          let dx = px - config.pCenterX;
+          let dy = py - config.pCenterY;
           let organic = Math.sin(dy * 0.05) * 2;
           let effectiveDist = Math.sqrt(dx * dx + Math.pow(dy * 2.0, 2)) + organic;
           let onWaveLine = (effectiveDist) % config.textureSpacing < config.textureThickness;
           if (onWaveLine) {
-            particles.push(new Particle(x, y, 'TEXT'));
+            particles.push(new Particle(px, py, 'TEXT'));
           }
         }
       }
     }
   }
 
-  createTextParticles(textData);
+  createTextParticles(textData, scanRegion.x, scanRegion.y);
 }
 
 function animate() {
