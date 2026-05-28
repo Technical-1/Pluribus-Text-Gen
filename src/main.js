@@ -29,6 +29,8 @@ const config = {
   waveFrequency: 140,
   waveStrength: 2.0,
   waveBandWidth: 50,
+  waveVisualDensity: 0.25,
+  maxWaveVisualParticles: 220,
   bgGridGap: 26,
 
   textureSpacing: 11,
@@ -133,6 +135,9 @@ class Particle {
       let dx = this.x - wave.x;
       let dy = this.y - wave.y;
       let dist = Math.sqrt(dx * dx + dy * dy);
+      // Skip when the particle sits exactly on the wave origin: dividing by
+      // dist below would produce NaN and permanently corrupt this particle.
+      if (dist === 0) continue;
       let distDiff = Math.abs(dist - wave.radius);
 
       if (distDiff < config.waveBandWidth) {
@@ -181,8 +186,12 @@ class Wave {
     const alpha = config.bgAlpha * (1 - lifePercent * 0.5);
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
 
-    const densityFactor = 0.25;
-    const particleCount = 5 + Math.floor(this.radius * densityFactor);
+    // Cap particle count so large/overlapping waves don't grow unbounded and
+    // tank the frame rate on low-end devices.
+    const particleCount = Math.min(
+      5 + Math.floor(this.radius * config.waveVisualDensity),
+      config.maxWaveVisualParticles
+    );
 
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -340,30 +349,41 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+function isInputFocused() {
+  const input = document.getElementById('textInput');
+  return input && document.activeElement === input;
+}
+
+// Debounced re-init: a burst of resize events (e.g. dragging a window edge, or
+// window + visualViewport both firing for one viewport change) collapses into a
+// single rebuild instead of running the full particle scan on every event.
+let resizeTimer = null;
+function scheduleReinit() {
+  if (resizeTimer !== null) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null;
+    init();
+  }, 150);
+}
+
 // Handle resize - only update full dimensions when input isn't focused (keyboard not up)
 window.addEventListener('resize', () => {
-  const input = document.getElementById('textInput');
-  const inputFocused = input && document.activeElement === input;
-
   // Only update stored dimensions if keyboard isn't affecting viewport
-  if (!inputFocused) {
+  if (!isInputFocused()) {
     fullWidth = window.innerWidth;
     fullHeight = window.innerHeight;
   }
-  init();
+  scheduleReinit();
 });
 
 // Use visualViewport API for better mobile keyboard handling
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    const input = document.getElementById('textInput');
-    const inputFocused = input && document.activeElement === input;
-
-    // Only update if keyboard isn't affecting viewport
-    if (!inputFocused) {
+    // Only react if keyboard isn't affecting viewport
+    if (!isInputFocused()) {
       fullWidth = window.visualViewport.width;
       fullHeight = window.visualViewport.height;
-      init();
+      scheduleReinit();
     }
   });
 }
@@ -397,11 +417,13 @@ if (input) {
 
   // Reinit with full dimensions when keyboard closes (mobile fix)
   input.addEventListener('blur', () => {
-    // Small delay to let viewport restore after keyboard closes
+    // Small delay to let viewport restore after keyboard closes, then funnel
+    // through the shared debounce so this coalesces with the visualViewport
+    // resize the closing keyboard also fires.
     setTimeout(() => {
       fullWidth = window.innerWidth;
       fullHeight = window.innerHeight;
-      init();
+      scheduleReinit();
     }, 100);
   });
 }
