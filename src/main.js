@@ -2,6 +2,8 @@
 // Original: https://github.com/lazygunner/pluribus_title
 // Their implementation is much better - check it out!
 
+import { waveForce, waveVisualParticleCount } from './simulation.js';
+
 let currentText = "PLUR1BUS";
 
 const canvas = document.createElement('canvas');
@@ -132,28 +134,9 @@ class Particle {
     }
 
     for (let wave of waves) {
-      let dx = this.x - wave.x;
-      let dy = this.y - wave.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      // Skip when the particle sits exactly on the wave origin: dividing by
-      // dist below would produce NaN and permanently corrupt this particle.
-      if (dist === 0) continue;
-      let distDiff = Math.abs(dist - wave.radius);
-
-      if (distDiff < config.waveBandWidth) {
-        let forceFactor = 1 - (distDiff / config.waveBandWidth);
-        forceFactor = Math.pow(forceFactor, 2);
-
-        let targetX = wave.x + (dx / dist) * wave.radius;
-        let targetY = wave.y + (dy / dist) * wave.radius;
-        let pullX = targetX - this.x;
-        let pullY = targetY - this.y;
-
-        let strength = this.type === 'TEXT' ? 0 : config.waveStrength;
-
-        totalPushX += pullX * strength * forceFactor;
-        totalPushY += pullY * strength * forceFactor;
-      }
+      const force = waveForce(this.x, this.y, this.type, wave, config);
+      totalPushX += force.x;
+      totalPushY += force.y;
     }
 
     this.x += totalPushX;
@@ -186,12 +169,7 @@ class Wave {
     const alpha = config.bgAlpha * (1 - lifePercent * 0.5);
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
 
-    // Cap particle count so large/overlapping waves don't grow unbounded and
-    // tank the frame rate on low-end devices.
-    const particleCount = Math.min(
-      5 + Math.floor(this.radius * config.waveVisualDensity),
-      config.maxWaveVisualParticles
-    );
+    const particleCount = waveVisualParticleCount(this.radius, config);
 
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -410,8 +388,10 @@ if (input) {
   input.addEventListener('input', (e) => {
     const newText = e.target.value.trim() || "PLUR1BUS";
     if (newText !== currentText) {
+      // Update state immediately but debounce the expensive rebuild so a burst
+      // of keystrokes triggers a single particle scan once typing settles.
       currentText = newText;
-      init();
+      scheduleReinit();
     }
   });
 
