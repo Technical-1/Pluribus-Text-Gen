@@ -8,6 +8,7 @@ let currentText = "PLUR1BUS";
 
 const canvas = document.createElement('canvas');
 canvas.id = 'canvas1';
+canvas.setAttribute('aria-hidden', 'true');
 document.body.appendChild(canvas);
 const ctx = canvas.getContext('2d');
 
