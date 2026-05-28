@@ -349,30 +349,41 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+function isInputFocused() {
+  const input = document.getElementById('textInput');
+  return input && document.activeElement === input;
+}
+
+// Debounced re-init: a burst of resize events (e.g. dragging a window edge, or
+// window + visualViewport both firing for one viewport change) collapses into a
+// single rebuild instead of running the full particle scan on every event.
+let resizeTimer = null;
+function scheduleReinit() {
+  if (resizeTimer !== null) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null;
+    init();
+  }, 150);
+}
+
 // Handle resize - only update full dimensions when input isn't focused (keyboard not up)
 window.addEventListener('resize', () => {
-  const input = document.getElementById('textInput');
-  const inputFocused = input && document.activeElement === input;
-
   // Only update stored dimensions if keyboard isn't affecting viewport
-  if (!inputFocused) {
+  if (!isInputFocused()) {
     fullWidth = window.innerWidth;
     fullHeight = window.innerHeight;
   }
-  init();
+  scheduleReinit();
 });
 
 // Use visualViewport API for better mobile keyboard handling
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    const input = document.getElementById('textInput');
-    const inputFocused = input && document.activeElement === input;
-
-    // Only update if keyboard isn't affecting viewport
-    if (!inputFocused) {
+    // Only react if keyboard isn't affecting viewport
+    if (!isInputFocused()) {
       fullWidth = window.visualViewport.width;
       fullHeight = window.visualViewport.height;
-      init();
+      scheduleReinit();
     }
   });
 }
@@ -406,11 +417,13 @@ if (input) {
 
   // Reinit with full dimensions when keyboard closes (mobile fix)
   input.addEventListener('blur', () => {
-    // Small delay to let viewport restore after keyboard closes
+    // Small delay to let viewport restore after keyboard closes, then funnel
+    // through the shared debounce so this coalesces with the visualViewport
+    // resize the closing keyboard also fires.
     setTimeout(() => {
       fullWidth = window.innerWidth;
       fullHeight = window.innerHeight;
-      init();
+      scheduleReinit();
     }, 100);
   });
 }
