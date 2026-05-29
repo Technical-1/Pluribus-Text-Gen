@@ -61,3 +61,27 @@ export function waveVisualParticleCount(radius, config) {
     config.maxWaveVisualParticles
   );
 }
+
+/**
+ * The pixel region to scan for text particles. The text is drawn centered
+ * horizontally (textAlign 'center' at canvasWidth/2) and vertically around
+ * centerY (textBaseline 'middle'), so only the box around it needs to be read
+ * instead of the whole canvas. All values are integers clamped to the canvas,
+ * with generous vertical padding to cover Montserrat 900 ascent/descent.
+ *
+ * @returns {{x:number, y:number, w:number, h:number}}
+ */
+export function textScanBounds(canvasWidth, canvasHeight, textWidth, fontSize, centerY) {
+  const padX = fontSize * 0.15;
+  const halfH = fontSize * 0.7;
+
+  const left = canvasWidth / 2 - textWidth / 2 - padX;
+  const top = centerY - halfH;
+
+  const x = Math.max(0, Math.floor(left));
+  const y = Math.max(0, Math.floor(top));
+  const w = Math.min(canvasWidth - x, Math.ceil(textWidth + padX * 2));
+  const h = Math.min(canvasHeight - y, Math.ceil(halfH * 2));
+
+  return { x, y, w: Math.max(1, w), h: Math.max(1, h) };
+}
