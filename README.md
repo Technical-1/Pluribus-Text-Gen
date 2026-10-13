@@ -17,15 +17,16 @@ Official Version<br>
 - **Wave aggregation** — particles are pulled toward wave crests, creating compression bands
 - **Elliptical exclusion zones** — background particles avoid letter areas for clean text edges
 - **Interactive input** — type any text to see it rendered in the Pluribus style
-- **Screenshot export** — capture the canvas as a 1200x630 OG image for social sharing
-- **PWA support** — installable as a standalone app on mobile and desktop
-- **Responsive** — adapts to any screen size with mobile keyboard-aware viewport handling
+- **Screenshot export** — download the live canvas as a 1200x630 PNG, letterboxed onto black, ready for social sharing
+- **PWA support** — installable as a standalone app, with separate `any` and `maskable` icons so Android adaptive icons are not clipped
+- **Responsive** — font size, particle density and wave width retune for small screens, with mobile keyboard-aware viewport handling
+- **Unit-tested simulation math** — wave force, wave particle budget and text scan bounds live in a pure module covered by Vitest
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite 7)
 
 ### Installation
 
@@ -40,17 +41,19 @@ Open your browser to `http://localhost:5173`.
 
 ## How It Works
 
-1. **Text Scanning** — Text is rendered to a hidden canvas and scanned pixel-by-pixel
+1. **Text Scanning** — Text is drawn to the canvas once, and only its bounding box is read back with `getImageData` and sampled for opaque pixels
 2. **Fingerprint Pattern** — Particles only appear where `distance % spacing < thickness`, creating curved concentric lines
 3. **Exclusion Zones** — Elliptical zones around each letter keep background particles out
-4. **Wave Physics** — Circular waves emit from the first letter, pulling nearby particles toward the wave crest
+4. **Wave Physics** — A circular wave is emitted from the first letter every 140 frames, pulling background particles within the band toward the crest
 5. **High Friction** — Background particles snap back to their original positions after waves pass
 
 ## Tech Stack
 
 - **HTML5 Canvas** — 2D particle rendering
 - **Vanilla JavaScript** — No frameworks
-- **[Vite](https://vitejs.dev/)** — Build tool and dev server
+- **[Vite](https://vitejs.dev/) 7** — Build tool and dev server
+- **[Vitest](https://vitest.dev/) 4** — Unit tests for the simulation math
+- **[sharp](https://sharp.pixelplumbing.com/)** — Generates the PWA icon PNGs from SVG sources
 - **[Montserrat](https://fonts.google.com/specimen/Montserrat)** — Google Font (Black 900)
 
 ## Credits
@@ -62,19 +65,26 @@ Open your browser to `http://localhost:5173`.
 
 ```
 Pluribus-Text-Gen/
-├── public/                # Static assets
-│   ├── favicon.svg        # SVG favicon
-│   ├── icon-180.png       # Apple touch icon
-│   ├── icon-192.png       # PWA icon (192x192)
-│   ├── icon-512.png       # PWA icon (512x512)
-│   ├── jk-logo.svg        # Attribution logo
-│   ├── manifest.webmanifest # PWA manifest
-│   └── og-image.png       # Open Graph preview image
+├── public/                     # Static assets
+│   ├── favicon.svg             # SVG favicon
+│   ├── icon-192.svg            # Source for the standard app icons
+│   ├── icon-maskable.svg       # Source for the maskable app icons
+│   ├── icon-180.png            # Apple touch icon
+│   ├── icon-192.png            # PWA icon, purpose "any"
+│   ├── icon-512.png            # PWA icon, purpose "any"
+│   ├── icon-maskable-192.png   # PWA icon, purpose "maskable"
+│   ├── icon-maskable-512.png   # PWA icon, purpose "maskable"
+│   ├── jk-logo.svg             # Attribution logo
+│   ├── manifest.webmanifest    # PWA manifest
+│   ├── og-image.png            # Open Graph preview image
+│   └── og-previews/og-home.html # HTML template for the OG image
 ├── scripts/
-│   └── generate-icons.js  # PWA icon generator (uses sharp)
+│   └── generate-icons.js       # Renders both icon sets with sharp
 ├── src/
-│   └── main.js            # Complete particle system (~427 lines)
-├── index.html             # Entry point with UI and meta tags
+│   ├── main.js                 # Canvas setup, particle and wave classes, render loop, UI wiring
+│   ├── simulation.js           # Pure wave-force and scan-bounds math (no DOM)
+│   └── simulation.test.js      # Vitest suite for simulation.js
+├── index.html                  # Entry point with inline styles, UI and meta tags
 └── package.json
 ```
 
@@ -85,7 +95,9 @@ Pluribus-Text-Gen/
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
-| `npm run generate-icons` | Regenerate PWA icons from SVG source |
+| `npm test` | Run the Vitest suite once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run generate-icons` | Regenerate PWA icons from the SVG sources |
 
 ## License
 
